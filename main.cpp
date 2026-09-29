@@ -1,4 +1,5 @@
 #include<iostream>
+#include<algorithm>
 using namespace std;
 
 template <typename T>
@@ -73,6 +74,68 @@ private:
         postorder(node->right);
         cout << node->data << " ";
     }
+
+    Node* insert(Node* node, int num){
+        if(!node){
+            return new Node(num);
+        }
+        if(num < node->data)
+            node->left = insert(node->left, num);
+        else if(num > node->data)
+            node->right = insert(node->right, num);
+        return node;
+    }
+
+    int height(Node* node){
+        if(!node)
+            return 0;
+        return max(height(node->left), height(node->right)) + 1;
+    }
+
+    Node* inPre(Node* node){
+        node = node->left;
+        while(node && node->right){
+            node = node->right;
+        }
+        return node;
+    }
+
+    Node* inSuccessor(Node* node){
+        node = node->right;
+        while(node && node->left){
+            node = node->left;
+        }
+        return node;
+    }
+
+    Node* Delete(Node* node, int key){
+        if(!node)
+            return nullptr;
+        if(key < node->data)
+            node->left = Delete(node->left, key);
+        else if(key > node->data)
+            node->right = Delete(node->right, key);
+        else{
+            if(!node->left && !node->right){
+                delete node;
+                return nullptr;
+            }
+            else if(!node->right){
+                Node* temp = node->left;
+                delete node;
+                return temp;
+            }
+            else if(!node->left){
+                Node* temp = node->right;
+                delete node;
+                return temp;
+            }
+            Node* temp = inSuccessor(node);
+            node->data = temp->data;
+            node->right = Delete(node->right, temp->data);
+        }
+        return node;
+    }
 public:
     Tree(): root(nullptr) {}
     void create(){
@@ -109,6 +172,10 @@ public:
         }
     }
 
+    void insert(int value){
+        root = insert(root, value);
+    }
+
     void preorder(){
         preorder(root);
         cout << endl;
@@ -123,13 +190,25 @@ public:
         postorder(root);
         cout << endl;
     }
+
+    void Delete(int key){
+        root = Delete(root, key);
+    }
 };
 
 int main(){
 
     Tree t;
-    t.create();
+    t.insert(1);
+    t.insert(2);
+    t.insert(3);
+    t.insert(4);
+    t.insert(5);
     t.preorder();
+    t.Delete(3);
+    t.preorder();
+    t.Delete(1);
+    t.inorder();
 
     return 0;
 }
