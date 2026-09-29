@@ -37,6 +37,49 @@ public:
             return nullptr;
         return q[++front];
     }
+
+    ~Queue(){
+        delete[] q;
+    }
+};
+
+template <typename T>
+class Stack{
+private:
+    int top;
+    int size;
+    T *s;
+public:
+    Stack(int sSize){
+        size = sSize;
+        s = new T[size];
+        top = -1;
+    }
+
+    bool isFull(){
+        return top == size - 1;
+    }
+
+    bool isEmpty(){
+        return top == -1;
+    }
+
+    void push(T x){
+        if(!isFull())
+            s[++top] = x;
+    }
+
+    T pop(){
+        return s[top--];
+    }
+
+    T peek(){
+        return s[top];
+    }
+
+    ~Stack(){
+        delete[] s;
+    }
 };
 
 
@@ -86,12 +129,6 @@ private:
         return node;
     }
 
-    int height(Node* node){
-        if(!node)
-            return 0;
-        return max(height(node->left), height(node->right)) + 1;
-    }
-
     Node* inPre(Node* node){
         node = node->left;
         while(node && node->right){
@@ -136,6 +173,33 @@ private:
         }
         return node;
     }
+    int countNode(Node* node){
+        int x, y;
+        if(node){
+            x = countNode(node->left);
+            y = countNode(node->right);
+            return x + y + 1;
+        }
+        return 0;
+    }
+
+    int countHeight(Node* node){
+        int x, y;
+        if(node){
+            x = countHeight(node->left);
+            y = countHeight(node->right);
+            if(x > y)
+                return x + 1;
+            return y + 1;
+        }
+        return 0;
+    }
+
+    int countLeafNode(Node* node){
+        if(!node) return 0;
+        if(!node->left && !node->right) return 1;
+        return countLeafNode(node->left) + countLeafNode(node->right);
+    }
 public:
     Tree(): root(nullptr) {}
     void create(){
@@ -150,7 +214,7 @@ public:
         while (!q.isEmpty())
         {
             Node* p = q.dequeue();
-            cout << "Enter left child value: ";
+            cout << "Enter left child value of " << p->data << ": ";
             cin >> x;
             if(x != -1){
                 Node* t = new Node(x);
@@ -159,7 +223,7 @@ public:
                 p->left = t;
                 q.enqueue(t);
             }
-            cout << "Enter right child value: ";
+            cout << "Enter right child value " << p->data << ": ";
             cin >> x;
             if(x != -1){
                 Node* t = new Node(x);
@@ -168,7 +232,6 @@ public:
                 p->right = t;
                 q.enqueue(t);
             }
-            p = q.dequeue();
         }
     }
 
@@ -194,6 +257,88 @@ public:
     void Delete(int key){
         root = Delete(root, key);
     }
+    void Ipreoder(){
+        Stack<Node*> s(20);
+        Node* p = root;
+        s.push(p);
+        while(!s.isEmpty()){
+            if(p){
+                cout << p->data << " ";
+                s.push(p);
+                p = p->left;
+            }
+            else{
+                p = s.pop();
+                p = p->right;
+            }
+        }
+    }
+
+    void Iinorder(){
+        Stack<Node*> s(20);
+        Node* p = root;
+        s.push(p);
+        while(!s.isEmpty()){
+            if(p){
+                s.push(p);
+                p = p->left;
+            }
+            else{
+                p = s.pop();
+                cout << p->data << " ";
+                p = p->right;
+            }
+        }
+    }
+
+    void Ipostorder(){
+        Stack<Node*> s1(20);
+        Stack<Node*> s2(20);
+        s1.push(root);
+        while (!s1.isEmpty())
+        {
+            Node* current = s1.pop();
+            s2.push(current);
+
+            if(current->left) 
+                s1.push(current->left);
+            if(current->right) 
+                s1.push(current->right);
+        }
+        while (!s2.isEmpty())
+        {
+            cout << s2.pop()->data << " ";
+        }
+        cout << endl;
+    }
+
+    void levelorder(){
+        if(!root)
+            return;
+        Queue<Node*> q(20);
+        q.enqueue(root);
+        while(!q.isEmpty()){
+            Node* p = q.dequeue();
+            cout << p->data << " ";
+            if(p->left)
+                q.enqueue(p->left);
+            if(p->right)
+                q.enqueue(p->right);
+        }
+        cout << endl;
+    }
+
+    int countNode(){
+        return countNode(root);
+    }
+
+    int countHeight(){
+        return countHeight(root);
+    }
+
+    int countLeafNode(){
+        return countLeafNode(root);
+    }
 };
 
 int main(){
@@ -209,6 +354,7 @@ int main(){
     t.preorder();
     t.Delete(1);
     t.inorder();
+
 
     return 0;
 }
