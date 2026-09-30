@@ -200,6 +200,117 @@ private:
         if(!node->left && !node->right) return 1;
         return countLeafNode(node->left) + countLeafNode(node->right);
     }
+
+    int isBalance(Node* node){
+        int hl, hr;
+        hl = node && node->left ? countHeight(node->left) : 0;
+        hr = node && node->right ? countHeight(node->right) : 0;
+        return hl - hr;
+    }
+
+    Node* LLRotation(Node* node){
+        Node* p = node->left;
+        Node* t = p->right;
+        
+        p->right = node;
+        node->left = t;
+        if(root == node) root = p;
+        return p;
+    }
+
+    Node* RRRotation(Node* node){
+        Node* p = node->right;
+        Node* t = p->left;
+        p->left = node;
+        node->right = t;
+        if(root == node) root = p;
+        return p;
+    }
+
+    Node* RLRotation(Node* node){
+        Node* p = node->right;
+        Node* t = p->left;
+        p->left = t->right;
+        node->right = t->left;
+
+        t->left = node;
+        t->right = p;
+        if(root == node) root = t;
+        return t;
+    }
+
+    Node* LRRotation(Node* node){
+        Node* p = node->left;
+        Node* t = p->right;
+        p->right = t->left;
+        node->left = t->right;
+
+        t->left = p;
+        t->right = node;
+        if(root == node) root = t;
+        return t;
+    }
+
+    Node* RInsert(Node* node, int key){
+        if(!node){
+            return new Node(key);
+        }
+        if(key < node->data)
+            node->right = RInsert(node->right, key);
+        else if(key > node->data)
+            node->left = RInsert(node->left, key);
+        
+        if(isBalance(node) > 2 && key < node->left->data){
+            return LLRotation(node);
+        }
+        else if(isBalance(node) > 2 && key > node->left->data)
+            return LRRotation(node);
+        else if(isBalance(node) > -2 && key > node->right->data)
+            return RRRotation(node);
+        else if(isBalance(node) > -2 && key < node->right->data)
+            return RLRotation(node);
+
+        return node;
+    }
+
+    Node* RDelete(Node* node,int key){
+        if(!node) return nullptr;
+        if(key < node->data)
+            node->left = RDelete(node->left, key);
+        else if(key > node->data)
+            node->right = RDelete(node->right, key);
+        else{
+            if(!node->right && !node->left){
+                delete node;
+                return nullptr;
+            }
+            else if(!node->left){
+                Node* t = node->right;
+                delete node;
+                return t;
+            }
+            else if(!node->right){
+                Node* t = node->left;
+                delete node;
+                return t;
+            }
+            Node* t = inSuccessor(node);
+            node->data = t->data;
+            node->right = RDelete(node->right, t->data);
+        }
+
+        int balance = isBalance(node);
+        if(balance > 1 && isBalance(node->left) > 0)
+            return LLRotation(node);
+        else if(balance < -1 && key > isBalance(node->right) < 0)
+            return RRRotation(node);
+        else if(balance > 1 && isBalance(node->left) < 0){
+            return LRRotation(node);
+        }
+        else if(balance < -1 && isBalance(node->right) > 0)
+            return RLRotation(node);
+        return node;
+    }
 public:
     Tree(): root(nullptr) {}
     void create(){
